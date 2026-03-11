@@ -1,20 +1,43 @@
 RegisterCommand('+throwweapon', function ()
     
+    -- Get required variables
     local playerPed = GetPlayerPed(-1)
+    local playerWeapon = GetSelectedPedWeapon(playerPed)
     local playerPos = GetEntityCoords(playerPed)
-    local playerHeading = GetEntityHeading(playerPed)
-    local playerWeapon = GetCurrentPedWeapon(playerPed)
+    local playerForward = GetEntityForwardVector(playerPed)
 
-    if playerWeapon == false then return end
+    -- Check if currently no weapon
+    if playerWeapon == -1569615261 then return end
 
-    RequestAnimDict('weapons@projectile@')
-    while not HasAnimDictLoaded('weapons@projectile@') do
+    -- Request animation
+    RequestAnimDict(Config.Anim.Dict)
+    while not HasAnimDictLoaded(Config.Anim.Dict) do
         Wait(1)
     end
 
-    TaskPlayAnim(playerPed, 'weapons@projectile@', 'throw_m_fb_stand', 8.0, -8.0, -1, 48, 0, false, false, false)
+    -- Play animation
+    TaskPlayAnim(playerPed, Config.Anim.Dict, Config.Anim.Name, 8.0, 8.0, 2000, 48, 0, false, false, false)
 
-    print('Throwing weapon')
+    -- Get the weapon prop to throw
+    local weaponToThrow = Config.WeaponProps[playerWeapon] or Config.DefaultWeapon
+
+    -- Request the model to be thrown
+    RequestModel(weaponToThrow)
+    while not HasModelLoaded(weaponToThrow) do
+        Wait(1)
+    end
+
+    -- Create the model
+    local prop = CreateObject(weaponToThrow, playerPos.x, playerPos.y, playerPos.z + 1.0, true, true, false)
+    
+    -- Apply physics
+    ActivatePhysics(prop)
+    SetDamping(prop, 0, 0.01)
+    SetEntityVelocity(prop, playerForward.x * Config.ThrowForce, playerForward.y * Config.ThrowForce, playerForward.z * Config.ThrowForce)
+
+    -- Cleanup
+    RemoveWeaponFromPed(playerPed, playerWeapon)
+    SetModelAsNoLongerNeeded(weaponToThrow)
 
 end)
 
