@@ -32,7 +32,7 @@ RegisterCommand('+throwweapon', function ()
     -- Create the model
     local prop = CreateObject(weaponToThrow, playerPos.x, playerPos.y, playerPos.z + 1.0, true, true, false)
     
-    table.insert(props, prop)
+    props[prop] = prop
 
     -- Apply physics
     ActivatePhysics(prop)
@@ -52,7 +52,7 @@ AddEventHandler('onResourceStop', function (resourceName)
 
     for k, v in pairs(props) do
         
-        DeleteEntity(k)
+        DeleteObject(k)
 
     end
 
