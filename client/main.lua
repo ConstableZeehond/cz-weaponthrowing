@@ -1,3 +1,5 @@
+local props = {}
+
 RegisterCommand('+throwweapon', function ()
     
     -- Get required variables
@@ -7,7 +9,7 @@ RegisterCommand('+throwweapon', function ()
     local playerForward = GetEntityForwardVector(playerPed)
 
     -- Check if currently no weapon
-    if playerWeapon == -1569615261 then return end
+    if Config.IgnoredWeapons[playerWeapon] ~= nil then return end
 
     -- Request animation
     RequestAnimDict(Config.Anim.Dict)
@@ -30,6 +32,8 @@ RegisterCommand('+throwweapon', function ()
     -- Create the model
     local prop = CreateObject(weaponToThrow, playerPos.x, playerPos.y, playerPos.z + 1.0, true, true, false)
     
+    table.insert(props, prop)
+
     -- Apply physics
     ActivatePhysics(prop)
     SetDamping(prop, 0, 0.01)
@@ -38,6 +42,19 @@ RegisterCommand('+throwweapon', function ()
     -- Cleanup
     RemoveWeaponFromPed(playerPed, playerWeapon)
     SetModelAsNoLongerNeeded(weaponToThrow)
+
+end)
+
+-- Cleanup on restart
+AddEventHandler('onResourceStop', function (resourceName)
+    
+    if (GetCurrentResourceName() ~= resourceName) then return end
+
+    for k, v in pairs(props) do
+        
+        DeleteEntity(k)
+
+    end
 
 end)
 
